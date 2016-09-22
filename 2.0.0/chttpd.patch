@@ -1,0 +1,34 @@
+diff --git a/src/chttpd.erl b/src/chttpd.erl
+index c446eac..990e287 100644
+--- a/src/chttpd.erl
++++ b/src/chttpd.erl
+@@ -466,6 +466,7 @@ extract_cookie(#httpd{mochi_req = MochiReq}) ->
+ 
+ authenticate_request(Req) ->
+     AuthenticationFuns = [
++        {<<"proxy">>, fun chttpd_auth:proxy_authentication_handler/1},
+         {<<"cookie">>, fun chttpd_auth:cookie_authentication_handler/1},
+         {<<"default">>, fun chttpd_auth:default_authentication_handler/1},
+         fun chttpd_auth:party_mode_handler/1 %% must be last
+diff --git a/src/chttpd_auth.erl b/src/chttpd_auth.erl
+index be12148..6602468 100644
+--- a/src/chttpd_auth.erl
++++ b/src/chttpd_auth.erl
+@@ -17,6 +17,7 @@
+ 
+ -export([default_authentication_handler/1]).
+ -export([cookie_authentication_handler/1]).
++-export([proxy_authentication_handler/1]).
+ -export([party_mode_handler/1]).
+ 
+ -export([handle_session_req/1]).
+@@ -47,6 +48,9 @@ default_authentication_handler(Req) ->
+ cookie_authentication_handler(Req) ->
+     couch_httpd_auth:cookie_authentication_handler(Req, chttpd_auth_cache).
+ 
++proxy_authentication_handler(Req) ->
++    couch_httpd_auth:proxy_authentication_handler(Req).
++
+ party_mode_handler(Req) ->
+     case config:get("chttpd", "require_valid_user", "false") of
+     "true" ->

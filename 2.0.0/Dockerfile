@@ -55,12 +55,16 @@ RUN apt-get update -y -qq && apt-get install -y --no-install-recommends \
  && echo 'deb https://deb.nodesource.com/node_4.x jessie main' > /etc/apt/sources.list.d/nodesource.list \
  && echo 'deb-src https://deb.nodesource.com/node_4.x jessie main' >> /etc/apt/sources.list.d/nodesource.list \
  && apt-get update -y -qq \
- && apt-get install -y nodejs \
- && npm install -g grunt-cli \
+ && apt-get install -y nodejs
+
+COPY chttpd.patch /usr/src
+
+RUN npm install -g grunt-cli \
  # Acquire CouchDB source code
  && cd /usr/src && mkdir couchdb \
  && curl -fSL https://dist.apache.org/repos/dist/release/couchdb/source/2.0.0/apache-couchdb-$COUCHDB_VERSION.tar.gz -o couchdb.tar.gz \
  && tar -xzf couchdb.tar.gz -C couchdb --strip-components=1 \
+ && patch -d couchdb/src/chttpd/ -p 1 < chttpd.patch \
  && cd couchdb \
  # Build the release and install into /opt
  && ./configure --disable-docs \
